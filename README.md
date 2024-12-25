@@ -19,8 +19,8 @@ If you haven't created an EKS cluster yet, you can create one using eksctl:
     eksctl create cluster --name my-cluster --region us-west-2 --nodegroup-name initial-nodes --node-type t3.medium --nodes 3 --nodes-min 1 --nodes-max 4 --managed
 
 # Breakdown of the Command
-- <span style="background-color:rgb(91, 91, 91)">eksctl create cluster</span> : This is the base command to create a new EKS cluster.
-- <span style="background-color:rgb(91, 91, 91)">--name my-cluster</span> : This option sets the name of the EKS cluster to my-cluster. You can replace my-cluster with any name you prefer for your cluster.
+- <mark>eksctl create cluster</mark> : This is the base command to create a new EKS cluster.
+- <span style="background-color:rgb(3, 3, 3)">--name my-cluster</span> : This option sets the name of the EKS cluster to my-cluster. You can replace my-cluster with any name you prefer for your cluster.
 - <span style="background-color:rgb(91, 91, 91)">--region us-west-2</span> : This option specifies the AWS region where the EKS cluster will be created. In this case, the cluster will be created in the us-west-2 region (Oregon). You can change this to any other AWS region based on your requirements.
 - <span style="background-color:rgb(91, 91, 91)">--nodegroup-name initial-nodes</span> : This option names the initial node group as initial-nodes. A node group is a group of EC2 instances that will be used as worker nodes in your EKS cluster. You can name this node group anything you like.
 - <span style="background-color:rgb(91, 91, 91)">--node-type t3.medium</span> : This option specifies the type of EC2 instances to be used for the worker nodes. In this case, t3.medium instances are used. You can choose other instance types based on your workload requirements and budget.
