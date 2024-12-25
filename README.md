@@ -72,4 +72,60 @@ Update your kubeconfig to use the new cluster:
     }
     ```
 
-3.
+# Breakdown of the Policy
+  
+  ## Version
+
+  ```sh
+  "Version": "2012-10-17"
+  ```
+  
+  This specifies the version of the policy language. The date "2012-10-17" indicates the version of the IAM policy language being used.
+
+  ## Statement
+  
+  The Statement element contains one or more individual statements. Each statement grants permissions for specific actions on specific resources.
+
+  ## Effect
+
+  "Effect": "Allow"
+  
+  The Effect element specifies whether the statement allows or denies access. In this case, it is set to "Allow", meaning the actions listed in the Action element are permitted.
+
+  ## Action
+    JSON
+    "Action": [
+      "ec2:CreateLaunchTemplate",
+      "ec2:CreateFleet",
+      "ec2:RunInstances",
+      "ec2:TerminateInstances",
+      "ec2:DescribeInstances",
+      "ec2:DescribeLaunchTemplates",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeInstanceTypes",
+      "iam:PassRole"
+    ]
+
+  The Action element specifies the list of actions that are allowed. Each action corresponds to a specific API operation in AWS services. Here are the actions included in this policy:
+
+  - <mark>ec2:CreateLaunchTemplate</mark> : Allows creating EC2 launch templates.
+  - <mark>ec2:CreateFleet</mark> : Allows creating EC2 fleets.
+  - <mark>ec2:RunInstances</mark> : Allows launching new EC2 instances.
+  - <mark>ec2:TerminateInstance</mark> : Allows terminating EC2 instances.
+  - <mark>ec2:DescribeInstances</mark> : Allows describing EC2 instances (retrieving information about EC2 instances).
+  - <mark>ec2:DescribeLaunchTemplates</mark> : Allows describing EC2 launch templates.
+  - <mark>ec2:DescribeSubnets</mark> : Allows describing subnets (retrieving information about subnets).
+  - <mark>ec2:DescribeSecurityGroups</mark> : Allows describing security groups (retrieving information about security groups).
+  - <mark>ec2:DescribeInstanceTypes</mark> : Allows describing instance types (retrieving information about EC2 instance types).
+  - <mark>iam:PassRole</mark> : Allows passing an IAM role to an AWS service (needed for services like EC2 to assume a role).
+
+  ## Resource
+
+  "Resource": "*"
+
+  The Resource element specifies the resources to which the actions apply. The asterisk (*) means that the actions are allowed on all resources. In other words, this policy grants the specified actions on any EC2 or IAM resource in the AWS account.
+
+## Summary
+
+This IAM policy grants permissions to perform several EC2-related actions (such as creating and managing instances, launch templates, and fleets, as well as describing various EC2 resources) and allows passing IAM roles to AWS services. The policy applies to all resources (*), meaning the permissions are not restricted to specific EC2 instances, subnets, or security groups. This kind of policy is typically used by applications or services that need to dynamically manage EC2 resources and requires broad permissions to do so.
