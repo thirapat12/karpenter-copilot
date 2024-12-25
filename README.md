@@ -20,14 +20,14 @@ If you haven't created an EKS cluster yet, you can create one using eksctl:
 
 # Breakdown of the Command
 - <mark>eksctl create cluster</mark> : This is the base command to create a new EKS cluster.
-- <span style="background-color:rgb(3, 3, 3)">--name my-cluster</span> : This option sets the name of the EKS cluster to my-cluster. You can replace my-cluster with any name you prefer for your cluster.
-- <span style="background-color:rgb(91, 91, 91)">--region us-west-2</span> : This option specifies the AWS region where the EKS cluster will be created. In this case, the cluster will be created in the us-west-2 region (Oregon). You can change this to any other AWS region based on your requirements.
-- <span style="background-color:rgb(91, 91, 91)">--nodegroup-name initial-nodes</span> : This option names the initial node group as initial-nodes. A node group is a group of EC2 instances that will be used as worker nodes in your EKS cluster. You can name this node group anything you like.
-- <span style="background-color:rgb(91, 91, 91)">--node-type t3.medium</span> : This option specifies the type of EC2 instances to be used for the worker nodes. In this case, t3.medium instances are used. You can choose other instance types based on your workload requirements and budget.
-- <span style="background-color:rgb(91, 91, 91)">--nodes 3</span> : This option sets the desired number of nodes in the node group to 3. This is the initial number of worker nodes that will be created in the cluster.
-- <span style="background-color:rgb(91, 91, 91)">--nodes-min 1</span> : This option sets the minimum number of nodes in the node group to 1. This means that the node group will always have at least 1 node running.
-- <span style="background-color:rgb(91, 91, 91)">--nodes-max 4</span> : This option sets the maximum number of nodes in the node group to 4. This means that the node group can scale up to 4 nodes if needed.
-- <span style="background-color:rgb(91, 91, 91)">--managed</span> : This option indicates that the node group should be managed by EKS. Managed node groups provide auto-scaling and simplified lifecycle management for worker nodes.
+- <mark>--name my-cluster</mark> : This option sets the name of the EKS cluster to my-cluster. You can replace my-cluster with any name you prefer for your cluster.
+- <mark>--region us-west-2</mark> : This option specifies the AWS region where the EKS cluster will be created. In this case, the cluster will be created in the us-west-2 region (Oregon). You can change this to any other AWS region based on your requirements.
+- <mark>--nodegroup-name initial-nodes</mark> : This option names the initial node group as initial-nodes. A node group is a group of EC2 instances that will be used as worker nodes in your EKS cluster. You can name this node group anything you like.
+- <mark>--node-type t3.medium</mark> : This option specifies the type of EC2 instances to be used for the worker nodes. In this case, t3.medium instances are used. You can choose other instance types based on your workload requirements and budget.
+- <mark>--nodes 3</mark> : This option sets the desired number of nodes in the node group to 3. This is the initial number of worker nodes that will be created in the cluster.
+- <mark>--nodes-min 1</mark> : This option sets the minimum number of nodes in the node group to 1. This means that the node group will always have at least 1 node running.
+- <mark>--nodes-max 4</mark> : This option sets the maximum number of nodes in the node group to 4. This means that the node group can scale up to 4 nodes if needed.
+- <mark>--managed</mark> : This option indicates that the node group should be managed by EKS. Managed node groups provide auto-scaling and simplified lifecycle management for worker nodes.
 
 ## Summary
 
