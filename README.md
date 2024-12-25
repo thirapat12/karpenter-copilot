@@ -75,11 +75,9 @@ Update your kubeconfig to use the new cluster:
 # Breakdown of the Policy
   
   ## Version
-
   ```sh
   "Version": "2012-10-17"
   ```
-  
   This specifies the version of the policy language. The date "2012-10-17" indicates the version of the IAM policy language being used.
 
   ## Statement
@@ -87,9 +85,9 @@ Update your kubeconfig to use the new cluster:
   The Statement element contains one or more individual statements. Each statement grants permissions for specific actions on specific resources.
 
   ## Effect
-
+  ```sh
   "Effect": "Allow"
-  
+  ```
   The Effect element specifies whether the statement allows or denies access. In this case, it is set to "Allow", meaning the actions listed in the Action element are permitted.
 
   ## Action
@@ -121,9 +119,9 @@ Update your kubeconfig to use the new cluster:
   - <mark>iam:PassRole</mark> : Allows passing an IAM role to an AWS service (needed for services like EC2 to assume a role).
 
   ## Resource
-
+  ```sh
   "Resource": "*"
-
+  ```
   The Resource element specifies the resources to which the actions apply. The asterisk (*) means that the actions are allowed on all resources. In other words, this policy grants the specified actions on any EC2 or IAM resource in the AWS account.
 
 ## Summary
