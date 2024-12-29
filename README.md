@@ -74,23 +74,23 @@ Update your kubeconfig to use the new cluster:
 
 # Breakdown of the Policy
   
-  ## Version
+  ### Version
   ```sh
   "Version": "2012-10-17"
   ```
   This specifies the version of the policy language. The date "2012-10-17" indicates the version of the IAM policy language being used.
 
-  ## Statement
+  ### Statement
   
   The Statement element contains one or more individual statements. Each statement grants permissions for specific actions on specific resources.
 
-  ## Effect
+  ### Effect
   ```sh
   "Effect": "Allow"
   ```
   The Effect element specifies whether the statement allows or denies access. In this case, it is set to "Allow", meaning the actions listed in the Action element are permitted.
 
-  ## Action
+  ### Action
     JSON
     "Action": [
       "ec2:CreateLaunchTemplate",
@@ -118,7 +118,7 @@ Update your kubeconfig to use the new cluster:
   - <mark>ec2:DescribeInstanceTypes</mark> : Allows describing instance types (retrieving information about EC2 instance types).
   - <mark>iam:PassRole</mark> : Allows passing an IAM role to an AWS service (needed for services like EC2 to assume a role).
 
-  ## Resource
+  ### Resource
   ```sh
   "Resource": "*"
   ```
@@ -127,3 +127,74 @@ Update your kubeconfig to use the new cluster:
 ## Summary
 
 This IAM policy grants permissions to perform several EC2-related actions (such as creating and managing instances, launch templates, and fleets, as well as describing various EC2 resources) and allows passing IAM roles to AWS services. The policy applies to all resources (*), meaning the permissions are not restricted to specific EC2 instances, subnets, or security groups. This kind of policy is typically used by applications or services that need to dynamically manage EC2 resources and requires broad permissions to do so.
+
+### Save the above JSON to a file named karpenter-iam-policy.json.
+Create the policy in AWS:
+
+The first command creates an IAM policy in AWS using the AWS CLI. The policy will be used to define the permissions for the Karpenter controller.
+
+```sh
+aws iam create-policy --policy-name KarpenterControllerPolicy --policy-document file://karpenter-iam-policy.json
+```
+
+- <mark>aws iam create-policy</mark>: This is the command to create a new IAM policy.
+- <mark>--policy-name KarpenterControllerPolicy</mark>: This specifies the name of the policy you are creating, in this case, "KarpenterControllerPolicy".
+- <mark>--policy-document file://karpenter-iam-policy.json</mark>: This specifies the path to the JSON file that contains the policy document. The file:// prefix indicates that the policy document is located in a file named karpenter-iam-policy.json on your local machine.
+
+Create an IAM Role for Karpenter and Attach the Policy
+
+The second set of commands creates an IAM service account for Karpenter in your EKS cluster and attaches the newly created policy to it.
+
+```sh
+eksctl create iamserviceaccount \
+  --cluster=my-cluster \
+  --namespace=karpenter \
+  --name=karpenter \
+  --attach-policy-arn=arn:aws:iam::<YOUR_ACCOUNT_ID>:policy/KarpenterControllerPolicy \
+  --approve
+```
+
+- <mark>eksctl create iamserviceaccount</mark>: This is the command to create an IAM service account using eksctl, a CLI tool for managing Amazon EKS clusters.
+- <mark>--cluster=my-cluster</mark>: This specifies the name of the EKS cluster where the IAM service account will be created. Replace my-cluster with the actual name of your EKS cluster.
+- <mark>--namespace=karpenter</mark>: This specifies the namespace within the EKS cluster where the IAM service account will be created. In this case, it's the karpenter namespace.
+- <mark>--name=karpenter</mark>: This specifies the name of the IAM service account. In this case, it's karpenter.
+- <mark>--attach-policy-arn=arn:aws:iam::<YOUR_ACCOUNT_ID>:policy/KarpenterControllerPolicy</mark>: This specifies the ARN (Amazon Resource Name) of the policy to attach to the IAM service account. Replace <YOUR_ACCOUNT_ID> with your actual AWS account ID.
+- <mark>--approve</mark>: This flag automatically approves the creation of the IAM service account without prompting for confirmation.
+
+## Summary
+
+- Create the IAM Policy: This policy document defines the permissions that the Karpenter controller will have.
+- Create IAM Service Account for Karpenter: This service account is created in the specified EKS cluster and namespace, and the previously created policy is attached to it.
+
+3. Install Karpenter using Helm:
+
+```sh
+helm install karpenter karpenter/karpenter --namespace karpenter --create-namespace \
+  --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<IAM_ROLE_NAME> \
+  --set settings.aws.clusterName=my-cluster \
+  --set settings.aws.defaultInstanceProfile=KarpenterNodeInstanceProfile \
+  --set settings.aws.interruptionQueueName=karpenter-interruption
+```
+
+    1 vulnerability detected
+    Hardcoded Credentials
+    Embedding credentials in source code risks unauthorized access
+
+Explanation:
+- helm install karpenter karpenter/karpenter: 
+- This is the Helm command to install a chart. The chart name is karpenter, and it is located in the karpenter repository.
+
+- --namespace karpenter: Specifies the namespace in which to install Karpenter. If the namespace does not exist, it will be created.
+
+- --create-namespace: This flag tells Helm to create the namespace if it doesn't already exist.
+
+- --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::<YOUR_ACCOUNT_ID>:role/<IAM_ROLE_NAME>: This sets the annotation for the Karpenter service account to associate it with an IAM role. Replace <YOUR_ACCOUNT_ID> with your AWS account ID and <IAM_ROLE_NAME> with the name of the IAM role you created for Karpenter.
+
+- --set settings.aws.clusterName=my-cluster: This sets the clusterName configuration for Karpenter to the name of your EKS cluster. Replace my-cluster with your actual EKS cluster name.
+
+- --set settings.aws.defaultInstanceProfile=KarpenterNodeInstanceProfile: This sets the default instance profile that Karpenter will use for the nodes it provisions. The instance profile should be named KarpenterNodeInstanceProfile.
+
+- --set settings.aws.interruptionQueueName=karpenter-interruption: This sets the name of the interruption queue that Karpenter will use to handle node interruptions. The queue should be named karpenter-interruption.
+
+Summary:
+This Helm command installs Karpenter in the karpenter namespace of your Kubernetes cluster. It configures the Karpenter service account with the necessary IAM role, sets the EKS cluster name, specifies the default instance profile for nodes, and configures the interruption queue. Replace the placeholders in the command with your actual AWS account ID, IAM role name, and EKS cluster name.
