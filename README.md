@@ -176,10 +176,6 @@ helm install karpenter karpenter/karpenter --namespace karpenter --create-namesp
   --set settings.aws.interruptionQueueName=karpenter-interruption
 ```
 
-    1 vulnerability detected
-    Hardcoded Credentials
-    Embedding credentials in source code risks unauthorized access
-
 Explanation:
 - helm install karpenter karpenter/karpenter: 
 - This is the Helm command to install a chart. The chart name is karpenter, and it is located in the karpenter repository.
@@ -196,5 +192,40 @@ Explanation:
 
 - --set settings.aws.interruptionQueueName=karpenter-interruption: This sets the name of the interruption queue that Karpenter will use to handle node interruptions. The queue should be named karpenter-interruption.
 
-Summary:
+### Summary:
 This Helm command installs Karpenter in the karpenter namespace of your Kubernetes cluster. It configures the Karpenter service account with the necessary IAM role, sets the EKS cluster name, specifies the default instance profile for nodes, and configures the interruption queue. Replace the placeholders in the command with your actual AWS account ID, IAM role name, and EKS cluster name.
+
+# Step 3: Configure Karpenter to Create Node Pools
+
+1. Create a Karpenter Provisioner: Create a file named karpenter-provisioner.yaml with the following content:
+
+    ```yaml
+    apiVersion: karpenter.sh/v1alpha5
+    kind: Provisioner
+    metadata:
+      name: default
+    spec:
+      requirements:
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ["amd64"]
+        - key: "kubernetes.io/os"
+          operator: In
+          values: ["linux"]
+        - key: "karpenter.sh/capacity-type"
+          operator: In
+          values: ["on-demand", "spot"]
+      limits:
+        resources:
+          cpu: "1000"
+          memory: "4000Gi"
+      provider:
+        subnetSelector:
+          Name: "eksctl-my-cluster-cluster/SubnetPrivate*"
+        securityGroupSelector:
+          aws:eks:cluster-name: "my-cluster"
+      ttlSecondsAfterEmpty: 30
+      labels:
+        karpenter: "true"
+    ```
+
