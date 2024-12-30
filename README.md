@@ -229,3 +229,216 @@ This Helm command installs Karpenter in the karpenter namespace of your Kubernet
         karpenter: "true"
     ```
 
+    Apply the provisioner configuration:
+    ```sh
+    kubectl apply -f karpenter-provisioner.yaml
+    ```
+
+2. Verify the Karpenter Installation:
+  
+    Check Karpenter pods:
+    ```sh
+    kubectl get pods -n karpenter
+    ```
+
+    Check Karpenter logs:
+    ```sh
+    kubectl logs -n karpenter -l app.kubernetes.io/name=karpenter
+    ```
+  
+    This YAML file defines a Karpenter Provisioner resource, which is used to manage the provisioning of nodes in a Kubernetes cluster. Here is a breakdown of each section of the file:
+
+### apiVersion and kind
+```yaml
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+```
+- apiVersion: karpenter.sh/v1alpha5: Specifies the API version of the Karpenter resource.
+- kind: Provisioner: Specifies that this resource is a Karpenter Provisioner.
+
+### Metadata
+  ```yaml
+  metadata:
+    name: default
+  ```
+metadata: Contains metadata about the resource.
+name: default: The name of this Provisioner resource is "default".
+
+### Specification
+```yaml
+spec:
+```
+- spec: Contains the specification for the Provisioner resource.
+
+### Requirements
+```yaml
+requirements:
+    - key: "kubernetes.io/arch"
+      operator: In
+      values: ["amd64"]
+    - key: "kubernetes.io/os"
+      operator: In
+      values: ["linux"]
+    - key: "karpenter.sh/capacity-type"
+      operator: In
+      values: ["on-demand", "spot"]
+```
+
+- <mark>requirements</mark>: Specifies the requirements for nodes that will be provisioned.
+  - <mark>key: "kubernetes.io/arch"</mark>: The node architecture must be amd64.
+  - <mark>key: "kubernetes.io/os"</mark>: The operating system must be linux.
+  - <mark>key: "karpenter.sh/capacity-type"</mark>: The capacity type can be either on-demand or spot.
+
+### Limits
+```yaml
+limits:
+    resources:
+      cpu: "1000"
+      memory: "4000Gi"
+```
+- <mark>limits</mark>: Specifies resource limits for the nodes.
+  - <mark>resources</mark>: The total resources that can be provisioned:
+      - <mark>cpu: "1000"</mark>: Up to 1000 CPUs.
+      - <mark>memory: "4000Gi"</mark>: Up to 4000 GiB of memory.
+
+### Provider
+```yaml
+provider:
+    subnetSelector:
+      Name: "eksctl-my-cluster-cluster/SubnetPrivate*"
+    securityGroupSelector:
+      aws:eks:cluster-name: "my-cluster"
+```
+
+- provider: Specifies provider-specific configurations.
+  - subnetSelector:
+    - Name: "eksctl-my-cluster-cluster/SubnetPrivate*": Selects subnets with names matching this pattern.
+  - securityGroupSelector:
+    - aws:eks:cluster-name: "my-cluster": Selects security groups associated with the EKS cluster named "my-cluster".
+
+### TTL Seconds After Empty
+```yaml
+ttlSecondsAfterEmpty: 30
+```
+- ttlSecondsAfterEmpty: 30: Specifies the time-to-live (TTL) in seconds for empty nodes. If a node is empty for 30 seconds, it will be terminated.
+
+### Labels
+```yaml
+labels:
+    karpenter: "true"
+```
+- labels: Specifies labels to be applied to the nodes provisioned by this Provisioner.
+  - karpenter: "true": Adds a label karpenter=true to the nodes.
+
+## Summary
+This Provisioner resource defines how Karpenter should provision nodes in your Kubernetes cluster. It sets requirements for the node architecture and operating system, specifies resource limits, selects subnets and security groups, and defines a TTL for empty nodes. This configuration ensures that nodes are provisioned according to the specified criteria and managed efficiently.
+
+3. Deploy a Test Workload: Create a deployment file named test-deployment.yaml:
+
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: nginx
+    spec:
+      replicas: 10
+      selector:
+        matchLabels:
+          app: nginx
+      template:
+        metadata:
+          labels:
+            app: nginx
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "512Mi"
+    ```
+    Apply the deployment:
+    ```sh
+    kubectl apply -f test-deployment.yaml
+    ```
+    Verify that Karpenter scales the nodes to accommodate the new pods:
+
+    ```sh
+    kubectl get nodes --show-labels
+    kubectl get pods -o wide
+    ```
+
+  ### Conclusion
+  By following these steps, you have successfully configured Karpenter to manage node pools in your EKS cluster. Karpenter will dynamically create and manage nodes based on the workload demands, ensuring efficient resource utilization. For more detailed information, refer to the official Karpenter documentation.
+
+  This YAML file defines a Kubernetes Deployment resource for deploying an Nginx web server. Let's break down each section of the file:
+
+  ### apiVersion and kind
+  ```yaml
+  apiVersion: apps/v1
+  kind: Deployment
+  ```
+
+  - apiVersion: apps/v1: Specifies the API version for the Deployment resource.
+  - kind: Deployment: Specifies that this resource is a Deployment.
+  ### Metadata
+  ```yaml
+  metadata:
+    name: nginx
+  ```
+  - metadata: Contains metadata about the resource.
+  - name: nginx: The name of the Deployment is "nginx".
+  ### Specification
+  ```yaml
+  spec:
+  ```
+  - spec: Contains the specification for the Deployment resource.
+  ### Replicas
+  ```yaml
+  replicas: 10
+  ```
+  - replicas: 10: Specifies that 10 replicas (pods) of the Nginx container should be created.
+  ### Selector
+  ```yaml
+  selector:
+      matchLabels:
+        app: nginx
+  ```
+  - selector: Specifies how to identify the pods that belong to this Deployment.
+    - matchLabels: Uses labels to match the pods.
+      - app: nginx: The label app: nginx is used to select the pods.
+  ### Template
+  ```yaml
+  template:
+      metadata:
+        labels:
+          app: nginx
+  ```
+  - template: Defines the pod template that describes the pods to be created by this Deployment.
+    - metadata: Contains metadata about the pod.
+      - labels: Labels for the pod.
+        - app: nginx: The pod is labeled with app: nginx to match the selector.
+  ### Pod Specification
+  ```yaml
+  spec:
+        containers:
+        - name: nginx
+          image: nginx
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+  ```
+  - spec: Contains the specification for the pod.
+    - containers: Specifies the list of containers to run in the pod.
+      -  name: nginx: The name of the container is "nginx".
+      - image: nginx: The container image to use is the official Nginx image from Docker Hub.
+      - resources: Specifies the resource requests for the container.
+        - requests: The minimum resources required for the container.
+          - cpu: "500m": The container requests 500 milliCPU (0.5 CPU).
+          - memory: "512Mi": The container requests 512 MiB (megabytes) of memory.
+
+## Summary
+This Deployment configuration will create 10 replicas of a pod running the Nginx web server. Each pod will have the label app: nginx and will run a single container using the Nginx image. The container is configured to request 0.5 CPU and 512 MiB of memory. This ensures that the Nginx web server has sufficient resources to operate efficiently. The Deployment ensures that the specified number of replicas is maintained, providing high availability and scalability for the Nginx service.
+
